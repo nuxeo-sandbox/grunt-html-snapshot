@@ -86,7 +86,11 @@ _Run this task with the `grunt htmlSnapshot` command._
 						width: 1200,
 						height: 800
 					}
-				}
+				},
+                // Inject some arbitrary javascript into the page that is being evaluated
+                injectJs: [
+                    'console.log("message from page!")'
+                ]
               }
             }
         }

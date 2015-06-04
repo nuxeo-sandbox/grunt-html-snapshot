@@ -83,9 +83,13 @@ page.open(url, function (status) {
         //If the function returns false we continue waiting and check again until the
         //function returns true or a timeout is hit
         setTimeout(function(){
-            var html = page.evaluate(function () {
+            var html = page.evaluate(function (injectJs) {
+                if ( injectJs !== '' ){
+                    eval(injectJs);
+                }
+
                 return  JSON.stringify(document.all[0].outerHTML);
-            });
+            }, options.injectJs);
             sendMessage("htmlSnapshot.pageReady", sanitizeHtml(html,options), url);
 
             phantom.exit();
