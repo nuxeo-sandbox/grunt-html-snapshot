@@ -83,9 +83,24 @@ page.open(url, function (status) {
         //If the function returns false we continue waiting and check again until the
         //function returns true or a timeout is hit
         setTimeout(function(){
-            var html = page.evaluate(function () {
-                return  JSON.stringify(document.all[0].outerHTML);
-            });
+            var html = page.evaluate(function (injectJs) {
+                if ( injectJs !== '' ){
+                    eval(injectJs);
+                }
+
+                var doctype;
+                var node = document.doctype;
+                if ( node !== null ) {
+                    var doctype = "<!DOCTYPE "
+                                + node.name
+                                + (node.publicId ? ' PUBLIC "' + node.publicId + '"' : '')
+                                + (!node.publicId && node.systemId ? ' SYSTEM' : '') 
+                                + (node.systemId ? ' "' + node.systemId + '"' : '')
+                                + '>';
+                }
+
+                return JSON.stringify(doctype + document.all[0].outerHTML);
+            }, options.injectJs);
             sendMessage("htmlSnapshot.pageReady", sanitizeHtml(html,options), url);
 
             phantom.exit();
