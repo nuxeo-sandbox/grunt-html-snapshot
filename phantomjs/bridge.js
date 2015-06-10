@@ -88,7 +88,18 @@ page.open(url, function (status) {
                     eval(injectJs);
                 }
 
-                return  JSON.stringify(document.all[0].outerHTML);
+                var doctype;
+                var node = document.doctype;
+                if ( node !== null ) {
+                    var doctype = "<!DOCTYPE "
+                                + node.name
+                                + (node.publicId ? ' PUBLIC "' + node.publicId + '"' : '')
+                                + (!node.publicId && node.systemId ? ' SYSTEM' : '') 
+                                + (node.systemId ? ' "' + node.systemId + '"' : '')
+                                + '>';
+                }
+
+                return JSON.stringify(doctype + document.all[0].outerHTML);
             }, options.injectJs);
             sendMessage("htmlSnapshot.pageReady", sanitizeHtml(html,options), url);
 
