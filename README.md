@@ -88,9 +88,7 @@ _Run this task with the `grunt htmlSnapshot` command._
 					}
 				},
                 // Inject some arbitrary javascript into the page that is being evaluated
-                injectJs: [
-                    'console.log("message from page!")'
-                ]
+                injectJs: 'do.js'
               }
             }
         }

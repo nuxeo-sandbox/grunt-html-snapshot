@@ -33,7 +33,7 @@ module.exports = function(grunt) {
           replaceStrings: [],
           haltOnError: true,
           pageOptions: {},
-          injectJs: []
+          injectJs: ''
         });
 
         // the channel prefix for this async grunt task
@@ -108,7 +108,7 @@ module.exports = function(grunt) {
                     cookies: options.cookies,
                     taskChannelPrefix: taskChannelPrefix,
                     pageOptions: options.pageOptions,
-                    injectJs: options.injectJs.join('')
+                    injectJs: options.injectJs
                 },
                 // Complete the task when done.
                 done: function (err) {

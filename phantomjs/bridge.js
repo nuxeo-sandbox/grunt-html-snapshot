@@ -73,6 +73,13 @@ page.onInitialized = function() {
     }
 }
 
+var evaluate = function(page, options, url) {
+    var html = page.evaluate(function () {
+        return JSON.stringify(document.all[0].outerHTML);
+    });
+    sendMessage("htmlSnapshot.pageReady", sanitizeHtml(html, options), url);
+};
+
 page.open(url, function (status) {
 
     if (status == 'success') {
@@ -82,15 +89,16 @@ page.open(url, function (status) {
         //We should let the user provider a function to check the html against.
         //If the function returns false we continue waiting and check again until the
         //function returns true or a timeout is hit
-        setTimeout(function(){
-            var html = page.evaluate(function (injectJs) {
-                if ( injectJs !== '' ){
-                    eval(injectJs);
+        setTimeout(function() {
+            if ( options.injectJs !== '' ) {
+                if (page.injectJs(options.injectJs)) {
+                    evaluate(page, options, url);
+                } else {
+                    sendMessage("htmlSnapshot.pageReady", sanitizeHtml(' failed to inject js ', options), url);
                 }
-
-                return  JSON.stringify(document.all[0].outerHTML);
-            }, options.injectJs);
-            sendMessage("htmlSnapshot.pageReady", sanitizeHtml(html,options), url);
+            } else {
+                evaluate(page, options, url);
+            }
 
             phantom.exit();
         }, options.msWaitForPages);
