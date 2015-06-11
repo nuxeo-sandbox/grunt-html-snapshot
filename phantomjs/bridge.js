@@ -73,6 +73,24 @@ page.onInitialized = function() {
     }
 }
 
+var evaluate = function(page, options, url) {
+    var html = page.evaluate(function () {
+        var doctype;
+        var node = document.doctype;
+        if ( node !== null ) {
+            var doctype = "<!DOCTYPE "
+                        + node.name
+                        + (node.publicId ? ' PUBLIC "' + node.publicId + '"' : '')
+                        + (!node.publicId && node.systemId ? ' SYSTEM' : '') 
+                        + (node.systemId ? ' "' + node.systemId + '"' : '')
+                        + '>';
+        }
+
+        return JSON.stringify(doctype + document.all[0].outerHTML);
+    });
+    sendMessage("htmlSnapshot.pageReady", sanitizeHtml(html, options), url);
+};
+
 page.open(url, function (status) {
 
     if (status == 'success') {
@@ -82,26 +100,16 @@ page.open(url, function (status) {
         //We should let the user provider a function to check the html against.
         //If the function returns false we continue waiting and check again until the
         //function returns true or a timeout is hit
-        setTimeout(function(){
-            var html = page.evaluate(function (injectJs) {
-                if ( injectJs !== '' ){
-                    eval(injectJs);
+        setTimeout(function() {
+            if ( options.injectJs !== '' ) {
+                if (page.injectJs(options.injectJs)) {
+                    evaluate(page, options, url);
+                } else {
+                    sendMessage("htmlSnapshot.pageReady", sanitizeHtml(' failed to inject js ', options), url);
                 }
-
-                var doctype;
-                var node = document.doctype;
-                if ( node !== null ) {
-                    var doctype = "<!DOCTYPE "
-                                + node.name
-                                + (node.publicId ? ' PUBLIC "' + node.publicId + '"' : '')
-                                + (!node.publicId && node.systemId ? ' SYSTEM' : '') 
-                                + (node.systemId ? ' "' + node.systemId + '"' : '')
-                                + '>';
-                }
-
-                return JSON.stringify(doctype + document.all[0].outerHTML);
-            }, options.injectJs);
-            sendMessage("htmlSnapshot.pageReady", sanitizeHtml(html,options), url);
+            } else {
+                evaluate(page, options, url);
+            }
 
             phantom.exit();
         }, options.msWaitForPages);
